@@ -16,20 +16,15 @@ to run this project you need:
 java17 - https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html <br>
 sql server express - https://go.microsoft.com/fwlink/p/?linkid=2216019&clcid=0x409&culture=en-us&country=us <br>
 maven - https://maven.apache.org/download.cgi <br>
-(follow a tutorial on how to install maven for example https://youtu.be/p0LPfK_oNCM?t=377)
+(follow a tutorial on how to install maven for example https://youtu.be/p0LPfK_oNCM?t=377)<br>
 
-when you have installed sql server, open sqlcmd
-and type:
-<br><code>USE [master]
-GO
-CREATE LOGIN [taskUser] WITH PASSWORD = 'your_password';
-GO
-</code>
-after that create the database using the schema.sql file in the resources folder<br>
-then open application.properties and replace you sql server instance.<br>
+clone/download the repository<br>
+when you have installed sql server, open sqlcmd, copy the code form schema.sql file (in the resources folder)<br>
+and paste it in sqlcmd (may take some time to execute all command so be patient)<br>
+then open application.properties and replace "DESKTOP-6V5OJSN\\\\SQLEXPRESS" you sql server instance.<br>
+don't forget to escape '\\'<br>
 to see what is your instance, in cmd run:<br>
 <code>sqlcmd -S localhost -E -Q "SELECT @@SERVERNAME"</code><br>
-also replace the password with the password you have chosen earlier.<br>
 <ol>
   <li>Open a command prompt or terminal window.</li>
   <li>Navigate to the root directory of your Spring Boot project where the pom.xml file is located.</li>
