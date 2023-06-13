@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" /><style>
+    .drop-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 40%;
+        background-color: #780378;
+        color: #fff;
+        text-align: center;
+        margin: 10px;
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .drop-area .title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    #dropAreasContainer {
+        display: flex;
+        overflow-x: auto;
+        width: 100%;
+        scrollbar-width: thin;
+        white-space: nowrap;
+    }
+
+    #tasksContainer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .task {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 20px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        min-width: 70%;
+        max-width: 80%;
+    }
+
+    .task .name {
+        font-weight: bold;
+        font-size: 16px;
+        margin-bottom: 8px;
+    }
+
+    .task .description {
+        max-height: 100px;
+        overflow-y: auto;
+    }
+</style>
+<th:block th:insert="~{./fragments/head.html}" >
+</th:block>
+<body id="body" >
+
+<th:block th:insert="~{./fragments/nav.html}" >
+</th:block>
+TASKS
+
+
+<i id="exportTasksIcon" style="float: right; margin-top: 2%; margin-right: 7%;" class="fa-solid fa-file-export fa-2x"></i>
+<svg style="width: 25px;margin-top: 2%;float: right;margin-right: 1% "  data-bs-target="#addTaskModal" data-bs-toggle="modal" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="fa-fw margin-right-md svg-inline--fa fa-plus"><path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" ></path></svg>
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="addTaskModalLabel" class="modal fade" id="addTaskModal" style="color:black"
+     tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addTaskModalLabel">Form for creating new task</h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form id="form" th:action="@{/api/v1/task}" method="post">
+                <input type="hidden" name="projectId" th:value="${id}">
+                <input type="hidden" name="isDeleted" value="false">
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">@</span>
+                        <input aria-describedby="basic-addon1" aria-label="Name" class="form-control myInput"
+                               placeholder="Name" required th:field="*{task.name}" type="text">
+                    </div>
+                    <div class="input-group mb-3">
+                    <textarea class="form-control" placeholder="Description"
+                              th:field="*{task.description}" rows="2" required></textarea>
+                    </div>
+
+                    <div id="errorDiv" class="alert alert-danger" style="display: none;"></div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" th:attr="onclick=|submitForm('/projects_menu/${id}')|" type="button">Submit</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--/Modal-->
+
+<div id="dropAreasContainer" class="loading">
+    <img width="50%" src="https://media.tenor.com/i_CfNgL7QkAAAAAM/loading-gif.gif" alt="loading...">
+
+
+</div>
+
+<th:block th:insert="~{./fragments/footer.html}" >
+</th:block>
+<script th:src="@{/js/submitForm.js}"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    let id = [[${id}]];
+    /*]]>*/
+</script>
+
+<script>
+    let draggedTaskId = null;
+
+    // Function to handle drag start event
+    function handleDragStart(event) {
+        const taskId = event.target.dataset.taskId;
+        const name = event.target.dataset.name;
+        const description = event.target.dataset.description;
+        const isDeleted = event.target.dataset.isDeleted;
+
+        const data = {
+            taskId: taskId,
+            name: name,
+            description: description,
+            isDeleted: isDeleted
+        };
+
+        event.dataTransfer.setData('application/json', JSON.stringify(data));
+        draggedTaskId = taskId;
+    }
+
+    // Function to handle drag over event
+    function handleDragOver(event) {
+        event.preventDefault();
+    }
+
+    // Function to handle drop event
+    async function handleDrop(event) {
+        event.preventDefault();
+        const taskDataString = event.dataTransfer.getData('application/json');
+        const taskData = JSON.parse(taskDataString);
+        const newStatus = event.target.dataset.status;
+
+        console.log(taskData);
+
+        const data = {
+            id: taskData.taskId,
+            name: taskData.name,
+            description: taskData.description,
+            projectId: id,
+            status: newStatus,
+            isDeleted: taskData.isDeleted,
+        };
+
+        // Send PUT request to update task status
+        const response = await fetch(`/api/v1/task`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        // Fetch tasks again to update the task list
+        await fetchTasks();
+    }
+
+
+    // Attach event listeners to task elements
+    function attachTaskListeners() {
+        const tasks = document.querySelectorAll('.task');
+        tasks.forEach((task) => {
+            task.addEventListener('dragstart', handleDragStart);
+        });
+    }
+
+    // Attach event listeners to drop areas
+    function attachDropAreaListeners() {
+        const dropAreas = document.querySelectorAll('.drop-area');
+        dropAreas.forEach((area) => {
+            area.addEventListener('dragover', handleDragOver);
+            area.addEventListener('drop', handleDrop);
+        });
+    }
+
+    function clearLoadingScreen() {
+        const container = document.getElementById('dropAreasContainer');
+        container.classList.remove('loading');
+        container.innerHTML = `
+        <div class="drop-area" id="ideaContainer" data-status="IDEA"></div>
+        <div class="drop-area" id="inProgressContainer" data-status="IN_PROGRESS"></div>
+        <div class="drop-area" id="doneContainer" data-status="DONE"></div>
+        `;
+    }
+
+    async function fetchTasks() {
+        const response = await fetch(`/api/v1/task/all/${id}`);
+        const tasks = await response.json();
+
+        clearLoadingScreen();
+
+        const containers = {
+            IDEA: document.getElementById('ideaContainer'),
+            IN_PROGRESS: document.getElementById('inProgressContainer'),
+            DONE: document.getElementById('doneContainer'),
+        };
+        const list = ['<div class="drop-area-title">Idea</div>',
+            '<div class="drop-area-title">In Progress</div>',
+            '<div class="drop-area-title">Done</div>']
+        // Clear previous tasks in containers
+        Object.values(containers).forEach((container,index) => {
+            container.innerHTML = list[index];
+        });
+
+        // Append tasks to respective status containers
+        tasks.forEach((task) => {
+            const taskElement = document.createElement('div');
+            taskElement.classList.add('task');
+            taskElement.draggable = true;
+            taskElement.dataset.taskId = task.id;
+            taskElement.dataset.name = task.name;
+            taskElement.dataset.description = task.description;
+            taskElement.dataset.isDeleted = task.isDeleted;
+
+            const nameElement = document.createElement('div');
+            nameElement.classList.add('name');
+            nameElement.textContent = task.name;
+
+            const linkElement = document.createElement('a');
+            linkElement.href = '/task_menu/'+task.id;
+
+            const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svgElement.setAttribute('aria-hidden', 'true');
+            svgElement.setAttribute('focusable', 'false');
+            svgElement.setAttribute('data-prefix', 'fas');
+            svgElement.setAttribute('data-icon', 'pencil');
+            svgElement.setAttribute('role', 'img');
+            svgElement.setAttribute('viewBox', '0 0 512 512');
+            svgElement.classList.add('fa-fw', 'margin-right-md', 'svg-inline--fa', 'fa-pencil');
+
+            const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElement.setAttribute('fill', 'currentColor');
+            pathElement.setAttribute('d', 'M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z');
+            pathElement.classList.add('fa-pencil');
+
+
+            svgElement.appendChild(pathElement);
+            linkElement.appendChild(svgElement);
+            nameElement.appendChild(linkElement);
+            const descriptionElement = document.createElement('div');
+            descriptionElement.classList.add('description');
+            descriptionElement.textContent = task.description;
+
+            taskElement.appendChild(nameElement);
+            taskElement.appendChild(descriptionElement);
+
+
+
+            const container = containers[task.status];
+            if (container) {
+                container.appendChild(taskElement);
+            }
+        });
+
+        // Attach event listeners to updated task elements
+        attachTaskListeners();
+        attachDropAreaListeners();
+    }
+
+    $(document).ready(async () => {
+        await fetchTasks();
+    });
+</script>
+<script>
+    $(document).ready(async () => {
+        const exportTasksIcon = document.getElementById('exportTasksIcon');
+        exportTasksIcon.addEventListener('click', exportTasks);
+
+        async function exportTasks() {
+            try {
+                const response = await fetch(`/api/v1/task/all/${id}`);
+                if (!response.ok) {
+                    throw new Error('Failed to retrieve tasks.');
+                }
+                const tasks = await response.json();
+                console.log(tasks);
+
+                // Generate the JSON file
+                const jsonFileData = JSON.stringify(tasks);
+                const blob = new Blob([jsonFileData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                // Create a download link for the JSON file
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'tasks.json';
+                link.click();
+
+                // Clean up the URL object
+                URL.revokeObjectURL(url);
+
+                alert('Tasks exported successfully.');
+            } catch (error) {
+                console.error(error);
+                alert('Failed to export tasks.');
+            }
+        }
+    });
+</script>
+</body>
+</html>

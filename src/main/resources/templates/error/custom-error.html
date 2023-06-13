@@ -1,0 +1,52 @@
+<!doctype html>
+<html dir="ltr" lang="en" xmlns:th="http://www.thymeleaf.org">
+<th:block th:insert="~{./fragments/head.html}">
+</th:block>
+<style>
+  .btn-toolbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+  #center-buttons {
+    display: flex;
+  }
+
+  #main {
+    padding-top: 10%;
+  }
+
+  @media screen and (max-width: 600px) {
+    #back {
+      display: grid;
+      place-items: center;
+      padding-top: 10%;
+    }
+
+    #main {
+      padding-top: 20%;
+    }
+  }
+</style>
+
+<body id="body">
+<div id="main">
+  <h1 class="display-3" style="text-align: center" th:text="${message}"></h1>
+
+  <div aria-label="Toolbar with button groups" class="btn-toolbar" role="toolbar">
+    <div id="center-buttons">
+      <div>
+        <button class="btn btn-secondary" onclick="history.back()" type="button">Go back</button>
+      </div>
+
+      <form method="get" th:action="@{/}">
+        <button class="btn btn-danger" type="submit">Go to home</button>
+      </form>
+    </div>
+  </div>
+</div>
+<th:block th:insert="~{./fragments/footer.html}">
+</th:block>
+</body>
+</html>

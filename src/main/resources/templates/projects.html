@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<th:block th:insert="~{./fragments/head.html}">
+</th:block>
+<style>
+    .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8%;
+    }
+
+    .card {
+
+        width: 250px;
+        height: 250px;
+        margin: 10px;
+        text-align: center;
+        background: linear-gradient(to bottom right, rgb(59, 8, 227) 0%, #780378 70%);
+        color: white;
+    }
+
+    @media screen and (max-width: 600px) {
+        .card {
+            width: 100%;
+        }
+    }
+</style>
+<body id="body">
+
+<th:block th:insert="~{./fragments/nav.html}">
+</th:block>
+<h1 class="display-3" style="text-align: center">Projects</h1>
+<p style="text-align: center">From this page you can see your projects and the projects you are part of </p>
+
+    <svg style="width: 25px;float: right;margin-right: 14% "  data-bs-target="#addProjectModal" data-bs-toggle="modal" aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="fa-fw margin-right-md svg-inline--fa fa-plus"><path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z" ></path></svg>
+<!-- Modal -->
+<div aria-hidden="true" aria-labelledby="addProjectModalLabel" class="modal fade" id="addProjectModal" style="color:black"
+     tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addProjectModalLabel">Form for creating new project</h1>
+                <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
+            </div>
+            <form id="form" th:action="@{/api/v1/project}" method="post">
+                <div class="modal-body">
+
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text" id="basic-addon1">@</span>
+                        <input aria-describedby="basic-addon1" aria-label="Name" class="form-control myInput"
+                               placeholder="Name" required th:field="*{project.name}" type="text">
+                    </div>
+                    <div class="input-group mb-3">
+                    <textarea class="form-control" placeholder="Description"
+                              th:field="*{project.description}" rows="2" required></textarea>
+                    </div>
+
+                    <div id="errorDiv" class="alert alert-danger" style="display: none;"></div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="submitForm('/projects_menu')" type="button">Submit</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!--/Modal-->
+<div id="projectContainer" style="width: 100%" class="loading">
+    <img width="50%" src="https://media.tenor.com/i_CfNgL7QkAAAAAM/loading-gif.gif" alt="loading...">
+</div>
+
+<th:block th:insert="~{./fragments/footer.html}">
+</th:block>
+<script th:src="@{/js/submitForm.js}"></script>
+<script>
+    async function fetchProjects() {
+        const response = await fetch('/api/v1/project/all');
+        const projects = await response.json();
+
+        const container = document.getElementById('projectContainer');
+        container.classList.remove('loading');
+        container.classList.add('card-container');
+        container.innerHTML = '';
+
+        projects.forEach(project => {
+            const div = document.createElement('div');
+            div.classList.add('card');
+            div.innerHTML = `
+        <h5 class="display-6">${project.name}</h5>
+        <p>Tasks: ${project.taskIds.length}</p>
+      `;
+
+            div.addEventListener('click', () => {
+                window.location.href = `/projects_menu/${project.id}`;
+            });
+
+            container.appendChild(div);
+        });
+    }
+
+    $(document).ready(async () => {
+        await fetchProjects();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<th:block th:insert="~{./fragments/head.html}" >
+</th:block>
+<body id="body">
+
+<th:block th:insert="~{./fragments/nav.html}" >
+</th:block>
+LOGIN
+
+<form id="form" class="form" th:action="@{/api/v1/login}">
+    <div class="input-group mb-3">
+        <span class="input-group-text" id="basic-addon1">@</span>
+        <input aria-describedby="basic-addon1" aria-label="Username" class="form-control myInput" placeholder="Username"
+               required th:field="*{user.username}" type="text">
+    </div>
+    <div class="input-group mb-3">
+        <span class="input-group-text" id="basic-addon2">🔒</span>
+        <input aria-describedby="basic-addon2" aria-label="Password" class="form-control myInput" placeholder="Password"
+               required th:field="*{user.password}" type="password">
+    </div>
+
+    <div id="errorDiv" class="alert alert-danger" style="display: none;"></div>
+
+    <button class="btn btn-primary" style="float: right;" type="button" onclick="submitForm('/')">Submit</button>
+</form>
+<th:block th:insert="~{./fragments/footer.html}" >
+</th:block>
+<script th:src="@{/js/submitForm.js}"></script>
+
+</body>
+</html>

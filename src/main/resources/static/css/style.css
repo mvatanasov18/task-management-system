@@ -1,0 +1,66 @@
+@import "scroll.css";
+
+body{
+    background: linear-gradient(176deg, rgb(18, 24, 27) 50%, rgb(35 47 74) 100%) fixed ;
+}
+#body{
+    color: azure;
+}
+.center-items{
+    display: grid;
+    place-items: center;
+}
+.title{
+    animation-duration: 2s;
+    animation-name: slide-in-low;
+    text-align: center;
+    margin-top: 11%;
+
+}
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40%;
+}
+.form{
+    width: 40%;
+    margin-left: 30%;
+}
+
+@keyframes slide-in-low {
+    0% {
+        margin-top: 50%;
+        opacity: 0;
+    }
+    100% {
+        margin-top: 11%;
+        opacity: 1;
+    }
+}
+@media screen and (max-width: 600px) {
+    @keyframes slide-in-low {
+        0% {
+            margin-top: 70%;
+            opacity: 0;
+        }
+        100% {
+            margin-top: 11%;
+            opacity: 1;
+        }
+    }
+    #form{
+        width: 70%;
+        margin-left: 15%;
+    }
+    .myInput{
+
+        width: 76% !important;
+        border-top-right-radius: 0.375rem !important;
+        border-bottom-right-radius:0.375rem !important;
+    }
+    .mySpan{
+        border-top-left-radius: 0.375rem !important;
+        border-bottom-left-radius:0.375rem !important;
+    }
+}

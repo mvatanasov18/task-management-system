@@ -1,0 +1,18 @@
+<th:block>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">TMS</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarColor01">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item" th:each="navElement:${navElements.elements}">
+            <a aria-current="page" class="nav-link active" th:href="${navElement.key}"
+               th:text="${navElement.value}"></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</th:block>
