@@ -1,5 +1,7 @@
 USE [master]
 GO
+CREATE LOGIN [taskUser] WITH PASSWORD = 'your_password';
+GO
 /****** Object:  Database [TaskManagement]    Script Date: 6/13/2023 1:11:23 AM ******/
 CREATE DATABASE [TaskManagement]
 GO
@@ -115,4 +117,8 @@ GO
 USE [master]
 GO
 ALTER DATABASE [TaskManagement] SET  READ_WRITE
+GO
+USE [TaskManagement]
+GO
+GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::dbo TO userTask
 GO
